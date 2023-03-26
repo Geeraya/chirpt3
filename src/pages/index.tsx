@@ -8,7 +8,7 @@ import type { RouterOutputs } from "~/utils/api";
 
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
-import { LoadingPage, LoadingSpinner } from "~/components/loading";
+import { LoadingPage } from "~/components/Loading";
 dayjs.extend(relativeTime);
 
 function CreatePostWizard() {
