@@ -8,8 +8,9 @@ import type { RouterOutputs } from "~/utils/api";
 
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
-import { LoadingPage } from "~/components/Loading";
+import { LoadingPage, LoadingSpinner } from "~/components/Loading";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 dayjs.extend(relativeTime);
 
 function CreatePostWizard() {
@@ -17,7 +18,23 @@ function CreatePostWizard() {
   const { user } = useUser();
   if (!user) return null;
 
-  const { mutate } = api.posts.create.useMutation();
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.posts.getAll.invalidate();
+    },
+    onError: (err) => {
+      const errorMessage = err.data?.zodError?.fieldErrors.content;
+
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Something went wrong. Please try again later.");
+      }
+    },
+  });
 
   return (
     <div className="flex w-full gap-3">
@@ -33,18 +50,34 @@ function CreatePostWizard() {
         className="grow bg-transparent outline-none"
         type={"text"}
         value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-      <button
-        onClick={() => {
-          mutate({
-            content: input,
-          });
-          setInput("");
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            mutate({
+              content: input,
+            });
+          }
         }}
-      >
-        Post
-      </button>
+        onChange={(e) => setInput(e.target.value)}
+        disabled={isPosting}
+      />
+      {input !== "" && !isPosting && (
+        <button
+          onClick={() => {
+            mutate({
+              content: input,
+            });
+          }}
+          disabled={isPosting}
+        >
+          Post
+        </button>
+      )}
+      {isPosting && (
+        <div className="flex items-center justify-center">
+          <LoadingSpinner size={20} />
+        </div>
+      )}
     </div>
   );
 }
