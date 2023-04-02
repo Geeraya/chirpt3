@@ -9,11 +9,15 @@ import type { RouterOutputs } from "~/utils/api";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
 import { LoadingPage } from "~/components/Loading";
+import { useState } from "react";
 dayjs.extend(relativeTime);
 
 function CreatePostWizard() {
+  const [input, setInput] = useState("");
   const { user } = useUser();
   if (!user) return null;
+
+  const { mutate } = api.posts.create.useMutation();
 
   return (
     <div className="flex w-full gap-3">
@@ -27,7 +31,20 @@ function CreatePostWizard() {
       <input
         placeholder="Type some emojis!"
         className="grow bg-transparent outline-none"
+        type={"text"}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
       />
+      <button
+        onClick={() => {
+          mutate({
+            content: input,
+          });
+          setInput("");
+        }}
+      >
+        Post
+      </button>
     </div>
   );
 }
@@ -66,7 +83,7 @@ function Feed() {
 
   return (
     <div className="flex flex-col">
-      {[...data, ...data].map((fullPost) => (
+      {data.map((fullPost) => (
         <PostView {...fullPost} key={fullPost.post.id} />
       ))}
     </div>
