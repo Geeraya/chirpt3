@@ -1,0 +1,23 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  DATABASE_URL: "mysql://h0z691rktsp3j7ztz2jv:pscale_pw_lE6qPuhMToXyu4yoxSLBSt9hInT7hUuIeUC1iRpj6ZM@us-east.connect.psdb.cloud/chirpt3?sslaccept=strict"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: TypeCheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
